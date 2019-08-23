@@ -2,6 +2,8 @@
 
 // Lock
 
+const PROMISE_TIMEOUT = 1000 * 10;
+
 class Lock {
   constructor(name) {
     this.name = name;
@@ -9,13 +11,28 @@ class Lock {
   }
 }
 
+const expirable = (executor, timeout = PROMISE_TIMEOUT) =>
+  new Promise((resolve, reject) => {
+    let expired = false;
+    const timer = setTimeout(() => {
+      expired = true;
+      reject(new Error('Expired'));
+    }, timeout);
+    const exit = fn => val => {
+      if (expired) return;
+      clearTimeout(timer);
+      fn(val);
+    };
+    executor(exit(resolve), exit(reject));
+  });
+
 const locks = {
   collection: new Map(),
 
   async request(name, callback) {
     let lock = this.collection.get(name);
     if (lock) {
-      return new Promise(resolve => {
+      return expirable(resolve => {
         lock.queue.push([callback, resolve]);
       });
     }
@@ -35,14 +52,26 @@ const locks = {
 
 // Usage
 
+const pause = msec => new Promise(resolve => {
+  setTimeout(resolve, Math.floor(Math.random() * msec));
+});
+
 (async () => {
   await locks.request('A', async lock => {
     console.log({ A1: lock });
     await locks.request('B', async lock => {
       console.log({ B1: lock });
+      pause(5000);
     });
-    await locks.request('B', async lock => {
-      console.log({ B2: lock });
+  });
+})();
+
+(async () => {
+  await locks.request('B', async lock => {
+    console.log({ B2: lock });
+    await locks.request('A', async lock => {
+      console.log({ A2: lock });
+      pause(5000);
     });
   });
 })();
