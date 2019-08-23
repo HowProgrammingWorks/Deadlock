@@ -2,7 +2,7 @@
 
 // Lock
 
-const PROMISE_TIMEOUT = 1000 * 10;
+const PROMISE_TIMEOUT = 1000 * 5;
 
 class Lock {
   constructor(name) {
@@ -58,20 +58,23 @@ const pause = msec => new Promise(resolve => {
 
 (async () => {
   await locks.request('A', async lock => {
-    console.log({ A1: lock });
+    console.log('1: lock A');
+    await pause(PROMISE_TIMEOUT * 2);
     await locks.request('B', async lock => {
-      console.log({ B1: lock });
-      pause(5000);
+      console.log('1: lock B');
+      await pause(PROMISE_TIMEOUT * 2);
+      console.log('Exit');
     });
   });
 })();
 
 (async () => {
   await locks.request('B', async lock => {
-    console.log({ B2: lock });
+    console.log('2: lock B');
+    await pause(PROMISE_TIMEOUT * 2);
     await locks.request('A', async lock => {
-      console.log({ A2: lock });
-      pause(5000);
+      console.log('2: lock A');
+      await pause(PROMISE_TIMEOUT * 2);
     });
   });
 })();
