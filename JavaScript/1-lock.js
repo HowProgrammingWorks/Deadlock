@@ -18,7 +18,7 @@ const expirable = (executor, timeout = PROMISE_TIMEOUT) =>
       expired = true;
       reject(new Error('Expired'));
     }, timeout);
-    const exit = fn => val => {
+    const exit = (fn) => (val) => {
       if (expired) return;
       clearTimeout(timer);
       fn(val);
@@ -32,7 +32,7 @@ const locks = {
   async request(name, callback) {
     let lock = this.collection.get(name);
     if (lock) {
-      return expirable(resolve => {
+      return expirable((resolve) => {
         lock.queue.push([callback, resolve]);
       });
     }
@@ -52,15 +52,15 @@ const locks = {
 
 // Usage
 
-const pause = msec => new Promise(resolve => {
+const pause = (msec) => new Promise((resolve) => {
   setTimeout(resolve, Math.floor(Math.random() * msec));
 });
 
 (async () => {
-  await locks.request('A', async lock => {
+  await locks.request('A', async (lock) => {
     console.log('1: lock A');
     await pause(PROMISE_TIMEOUT * 2);
-    await locks.request('B', async lock => {
+    await locks.request('B', async (lock) => {
       console.log('1: lock B');
       await pause(PROMISE_TIMEOUT * 2);
       console.log('Exit');
@@ -69,10 +69,10 @@ const pause = msec => new Promise(resolve => {
 })();
 
 (async () => {
-  await locks.request('B', async lock => {
+  await locks.request('B', async (lock) => {
     console.log('2: lock B');
     await pause(PROMISE_TIMEOUT * 2);
-    await locks.request('A', async lock => {
+    await locks.request('A', async (lock) => {
       console.log('2: lock A');
       await pause(PROMISE_TIMEOUT * 2);
     });
