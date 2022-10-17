@@ -1,2 +1,1 @@
-# Deadlock
-Deadlock and Livelock Examples
+# Deadlock and Livelock Examples
