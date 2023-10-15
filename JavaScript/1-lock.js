@@ -47,6 +47,7 @@ const locks = {
       next = lock.queue.pop();
     }
     this.collection.delete(name);
+    return Promise.resolve();
   }
 };
 
@@ -58,10 +59,10 @@ const pause = (msec) => new Promise((resolve) => {
 
 (async () => {
   await locks.request('A', async (lock) => {
-    console.log('1: lock A');
+    console.log('1:', lock);
     await pause(PROMISE_TIMEOUT * 2);
     await locks.request('B', async (lock) => {
-      console.log('1: lock B');
+      console.log('1:', lock);
       await pause(PROMISE_TIMEOUT * 2);
       console.log('Exit');
     });
@@ -70,10 +71,10 @@ const pause = (msec) => new Promise((resolve) => {
 
 (async () => {
   await locks.request('B', async (lock) => {
-    console.log('2: lock B');
+    console.log('2:', lock);
     await pause(PROMISE_TIMEOUT * 2);
     await locks.request('A', async (lock) => {
-      console.log('2: lock A');
+      console.log('2:', lock);
       await pause(PROMISE_TIMEOUT * 2);
     });
   });
